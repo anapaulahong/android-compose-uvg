@@ -2,24 +2,22 @@ package com.zezzi.eventzezziapp.data.repository
 
 import com.zezzi.eventzezziapp.data.networking.MealsWebService
 import com.zezzi.eventzezziapp.data.networking.response.MealsCategoriesResponse
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 
 class MealsRepository(private val webService: MealsWebService = MealsWebService()) {
-    fun getMeals(successCallback: (response: MealsCategoriesResponse?) -> Unit) {
+    suspend fun getMeals(): Flow<MealCategoriesResponse?> = flow) {
         return webService.getMeals().enqueue(object : Callback<MealsCategoriesResponse> {
-            override fun onResponse(
-                call: Call<MealsCategoriesResponse>,
-                response: Response<MealsCategoriesResponse>
-            ) {
-                if (response.isSuccessful)
-                    successCallback(response.body())
-            }
+            try {
+                val response = webService.getMeals().execute()
+                if (response.isSuccessful){
+                    emit(response.body())
+                }
+            } catch (e: Exception){
 
-            override fun onFailure(call: Call<MealsCategoriesResponse>, t: Throwable) {
-                // TODO treat failure
             }
-        })
+        }.flowOn(Dispatchers.IO)
     }
 }
